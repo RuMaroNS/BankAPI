@@ -18,12 +18,12 @@ jobs:
 
       # Запуск бота (в фоне)
       - name: Run Bank Bot
+        run: node bot.js &
         env:
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
-        run: node bot.js &
-
+        
       # Деплой: создаем папку dist, кладем туда чистый код, заменяем ключи ТОЛЬКО там
       - name: Prepare and Deploy
         run: |
