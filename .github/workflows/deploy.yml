@@ -1,9 +1,16 @@
 name: CI/CD Pipeline
-on: [push, workflow_dispatch]
+on: 
+  push:
+  workflow_dispatch:
+  # ЭТОТ CRON ЗАСТАВЛЯЕТ БОТА ПЕРЕЗАПУСКАТЬСЯ КАЖДЫЕ 5 ЧАСОВ
+  schedule:
+    - cron: '0 */5 * * *'
 
 jobs:
   run-everything:
     runs-on: ubuntu-latest
+    # ЭТОТ ТАЙМАУТ НЕ ДАЕТ БОТУ УМЕРЕТЬ РАНЬШЕ ВРЕМЕНИ
+    timeout-minutes: 340 
     permissions:
       contents: write
     steps:
@@ -16,28 +23,28 @@ jobs:
       - name: Install
         run: npm install
 
-      # Запуск бота (в фоне)
+      # Бот запускается в фоне и живет, пока не истечет timeout-minutes
       - name: Run Bank Bot
-        run: node bot.js &
         env:
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
-        
-      # Деплой: создаем папку dist, кладем туда чистый код, заменяем ключи ТОЛЬКО там
+        run: node bot.js &
+
+      # Деплой сайта (создаем папку dist, чтобы не ломать исходники)
       - name: Prepare and Deploy
         run: |
-          mkdir dist
-          cp index.html dist/
+          mkdir -p dist
+          # Копируем только нужные файлы, исключая папку dist, чтобы не было ошибки
+          find . -maxdepth 1 -not -name 'dist' -not -name '.git' -not -name '.github' -exec cp -r {} dist/ \;
           sed -i "s|URL_SUPABASE|${{ secrets.SUPABASE_URL }}|g" dist/index.html
           sed -i "s|KEY_SUPABASE|${{ secrets.SUPABASE_KEY }}|g" dist/index.html
-          # Копируем остальные файлы, если они есть
-          cp -r * dist/ || true 
 
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./dist # Деплоим только подготовленную папку
+          publish_dir: ./dist
           user_name: 'github-actions[bot]'
           user_email: 'github-actions[bot]@users.noreply.github.com'
+          
