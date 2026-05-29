@@ -41,4 +41,3 @@ jobs:
           publish_dir: ./dist # Деплоим только подготовленную папку
           user_name: 'github-actions[bot]'
           user_email: 'github-actions[bot]@users.noreply.github.com'
-					
