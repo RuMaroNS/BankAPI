@@ -2,27 +2,59 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Банк</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мой Банк</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="constants.js"></script>
+    <style>
+        body { font-family: sans-serif; background: #000; color: #fff; display: flex; justify-content: center; padding-top: 50px; margin: 0; }
+        .card { width: 300px; padding: 20px; border: 1px solid #333; border-radius: 10px; background: #111; text-align: center; }
+        input { width: 100%; padding: 10px; margin: 10px 0; box-sizing: border-box; background: #222; border: 1px solid #444; color: #fff; border-radius: 5px; }
+        button { width: 100%; padding: 10px; background: #007bff; border: none; color: white; cursor: pointer; border-radius: 5px; font-weight: bold; }
+        button:hover { background: #0056b3; }
+        h1 { margin: 10px 0; color: #0f0; }
+    </style>
 </head>
 <body>
-    <input type="text" id="phone-input" placeholder="Номер телефона">
-    <button onclick="login()">Войти</button>
-    <div id="balance-display"></div>
 
-    <script>
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+<div class="card">
+    <div id="auth-section">
+        <h2>Вход в Банк</h2>
+        <input type="text" id="phone-input" placeholder="Номер телефона">
+        <button onclick="login()">Войти</button>
+    </div>
 
-        async function login() {
-            const phone = document.getElementById('phone-input').value;
-            const { data, error } = await supabase.from('users').select('balance').eq('phone', phone).single();
-            if (data) {
-                document.getElementById('balance-display').innerText = "Баланс: " + data.balance + "₽";
-            } else {
-                alert("Ошибка: " + (error ? error.message : "Не найден"));
-            }
+    <div id="app-section" style="display:none;">
+        <h2>Твой Баланс</h2>
+        <h1 id="balance-display">0</h1>
+        <button onclick="location.reload()">Выйти</button>
+    </div>
+</div>
+
+<script>
+    // Прямая инициализация, никаких замен
+    const supabase = supabase.createClient(
+        'https://olcfpuuomjazzhmdvdjn.supabase.co',
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9sY2ZwdXVvbWphenpobWR2ZGpuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwNDE2NDgsImV4cCI6MjA5NTYxNzY0OH0.M2S32dxdljB6qpdzFuCd1f2P32Mg4lhoRq0P9kIPzOQ'
+    );
+
+    async function login() {
+        const phone = document.getElementById('phone-input').value;
+        
+        const { data, error } = await supabase
+            .from('users')
+            .select('balance')
+            .eq('phone', phone)
+            .single();
+
+        if (data) {
+            document.getElementById('auth-section').style.display = 'none';
+            document.getElementById('app-section').style.display = 'block';
+            document.getElementById('balance-display').innerText = data.balance + ' ₽';
+        } else {
+            alert('Пользователь не найден. Зарегистрируйся через бота!');
         }
-    </script>
+    }
+</script>
+
 </body>
 </html>
