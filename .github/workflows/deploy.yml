@@ -2,15 +2,15 @@ name: CI/CD Pipeline
 on: 
   push:
   workflow_dispatch:
-  # ЭТОТ CRON ЗАСТАВЛЯЕТ БОТА ПЕРЕЗАПУСКАТЬСЯ КАЖДЫЕ 5 ЧАСОВ
+  # Этот крон запускает процесс каждые 5 часов
   schedule:
     - cron: '0 */5 * * *'
 
 jobs:
   run-everything:
     runs-on: ubuntu-latest
-    # ЭТОТ ТАЙМАУТ НЕ ДАЕТ БОТУ УМЕРЕТЬ РАНЬШЕ ВРЕМЕНИ
-    timeout-minutes: 340 
+    # Это важно: позволяет боту работать до 6 часов (360 минут)
+    timeout-minutes: 360 
     permissions:
       contents: write
     steps:
@@ -23,7 +23,7 @@ jobs:
       - name: Install
         run: npm install
 
-      # Бот запускается в фоне и живет, пока не истечет timeout-minutes
+      # Здесь бот запускается и остается висеть в памяти
       - name: Run Bank Bot
         env:
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
@@ -31,12 +31,12 @@ jobs:
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
         run: node bot.js &
 
-      # Деплой сайта (создаем папку dist, чтобы не ломать исходники)
+      # Деплой сайта
       - name: Prepare and Deploy
         run: |
           mkdir -p dist
-          # Копируем только нужные файлы, исключая папку dist, чтобы не было ошибки
-          find . -maxdepth 1 -not -name 'dist' -not -name '.git' -not -name '.github' -exec cp -r {} dist/ \;
+          # Копируем всё в папку dist, кроме самого dist и .github
+          rsync -av --exclude='dist' --exclude='.github' --exclude='.git' . dist/
           sed -i "s|URL_SUPABASE|${{ secrets.SUPABASE_URL }}|g" dist/index.html
           sed -i "s|KEY_SUPABASE|${{ secrets.SUPABASE_KEY }}|g" dist/index.html
 
@@ -47,4 +47,7 @@ jobs:
           publish_dir: ./dist
           user_name: 'github-actions[bot]'
           user_email: 'github-actions[bot]@users.noreply.github.com'
-          
+
+      # И САМОЕ ВАЖНОЕ: Чтобы процесс не убивался сразу, мы ждем
+      - name: Keep Bot Alive
+        run: sleep 21000
