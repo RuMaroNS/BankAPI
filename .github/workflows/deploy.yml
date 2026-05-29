@@ -2,28 +2,21 @@ name: CI/CD Pipeline
 on: 
   push:
   workflow_dispatch:
-  # Этот крон запускает процесс каждые 5 часов
   schedule:
     - cron: '0 */5 * * *'
 
 jobs:
   run-everything:
     runs-on: ubuntu-latest
-    # Это важно: позволяет боту работать до 6 часов (360 минут)
-    timeout-minutes: 360 
-    permissions:
-      contents: write
+    timeout-minutes: 360
+    permissions: { contents: write }
     steps:
       - uses: actions/checkout@v4
-      
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with: { node-version: '24' }
-          
-      - name: Install
-        run: npm install
+      - run: npm install
 
-      # Здесь бот запускается и остается висеть в памяти
+      # Бот живет своей жизнью
       - name: Run Bank Bot
         env:
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
@@ -31,23 +24,15 @@ jobs:
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
         run: node bot.js &
 
-      # Деплой сайта
-      - name: Prepare and Deploy
-        run: |
-          mkdir -p dist
-          # Копируем всё в папку dist, кроме самого dist и .github
-          rsync -av --exclude='dist' --exclude='.github' --exclude='.git' . dist/
-          sed -i "s|URL_SUPABASE|${{ secrets.SUPABASE_URL }}|g" dist/index.html
-          sed -i "s|KEY_SUPABASE|${{ secrets.SUPABASE_KEY }}|g" dist/index.html
-
+      # Просто деплоим всё, что лежит в папке, без лишних манипуляций
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./dist
+          publish_dir: .
           user_name: 'github-actions[bot]'
           user_email: 'github-actions[bot]@users.noreply.github.com'
 
-      # И САМОЕ ВАЖНОЕ: Чтобы процесс не убивался сразу, мы ждем
       - name: Keep Bot Alive
         run: sleep 21000
+        
