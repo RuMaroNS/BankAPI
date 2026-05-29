@@ -16,12 +16,13 @@ jobs:
       - name: Install
         run: npm install telegraf @supabase/supabase-js
 
-      - name: Run Bot
-        run: node bot.js &
+      - name: Run Bank Bot
         env:
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+        run: node bot.js
+
 
       - name: Inject Secrets
         run: |
