@@ -29,8 +29,8 @@
 </div>
 
 <script>
-    // URL_SUPABASE и KEY_SUPABASE — это плейсхолдеры для Workflow
-    const supabase = supabase.createClient('URL_SUPABASE', 'KEY_SUPABASE');
+    // https://olcfpuuomjazzhmdvdjn.supabase.co и eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9sY2ZwdXVvbWphenpobWR2ZGpuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwNDE2NDgsImV4cCI6MjA5NTYxNzY0OH0.M2S32dxdljB6qpdzFuCd1f2P32Mg4lhoRq0P9kIPzOQ — это плейсхолдеры для Workflow
+    const supabase = supabase.createClient('https://olcfpuuomjazzhmdvdjn.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9sY2ZwdXVvbWphenpobWR2ZGpuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwNDE2NDgsImV4cCI6MjA5NTYxNzY0OH0.M2S32dxdljB6qpdzFuCd1f2P32Mg4lhoRq0P9kIPzOQ');
 
     async function login() {
         const phone = document.getElementById('phone-input').value;
