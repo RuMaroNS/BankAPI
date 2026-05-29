@@ -1,18 +1,17 @@
 name: CI/CD Pipeline
-on: [push]
+on: [push, workflow_dispatch] # workflow_dispatch позволит запускать вручную кнопкой
 
 jobs:
   run-everything:
     runs-on: ubuntu-latest
-    env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true # Принудительный переход на Node 24
+    permissions:
+      contents: write # Явно разрешаем запись
     steps:
-      - uses: actions/checkout@v4 # Обновлено до v4
+      - uses: actions/checkout@v4
       
       - name: Setup Node
-        uses: actions/setup-node@v4 # Обновлено до v4
-        with: 
-          node-version: '24' # Указана актуальная версия
+        uses: actions/setup-node@v4
+        with: { node-version: '24' }
           
       - name: Install
         run: npm install telegraf @supabase/supabase-js
@@ -30,8 +29,10 @@ jobs:
           sed -i "s|KEY_SUPABASE|${{ secrets.SUPABASE_KEY }}|g" index.html
 
       - name: Deploy
-        uses: peaceiris/actions-gh-pages@v4 # Обновлено до v4
+        uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: .
+          user_name: 'github-actions[bot]'
+          user_email: 'github-actions[bot]@users.noreply.github.com'
           
