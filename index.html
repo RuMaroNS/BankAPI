@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мой Банк</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: sans-serif; background: #000; color: #fff; display: flex; justify-content: center; padding-top: 50px; }
+        .card { width: 300px; padding: 20px; border: 1px solid #333; border-radius: 10px; background: #111; }
+        input { width: 100%; padding: 10px; margin: 10px 0; box-sizing: border-box; background: #222; border: none; color: #fff; }
+        button { width: 100%; padding: 10px; background: #007bff; border: none; color: white; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <div id="auth-section">
+        <h2>Вход</h2>
+        <input type="text" id="phone-input" placeholder="Номер телефона">
+        <button onclick="login()">Войти</button>
+    </div>
+
+    <div id="app-section" style="display:none;">
+        <h2>Баланс</h2>
+        <h1 id="balance-display">0</h1>
+        <button onclick="location.reload()">Выйти</button>
+    </div>
+</div>
+
+<script>
+    // URL_SUPABASE и KEY_SUPABASE — это плейсхолдеры для Workflow
+    const supabase = supabase.createClient('URL_SUPABASE', 'KEY_SUPABASE');
+
+    async function login() {
+        const phone = document.getElementById('phone-input').value;
+        
+        const { data, error } = await supabase
+            .from('users')
+            .select('balance')
+            .eq('phone', phone)
+            .single();
+
+        if (data) {
+            document.getElementById('auth-section').style.display = 'none';
+            document.getElementById('app-section').style.display = 'block';
+            document.getElementById('balance-display').innerText = data.balance;
+        } else {
+            alert('Пользователь не найден. Зарегистрируйся через бота!');
+        }
+    }
+</script>
+
+</body>
+</html>
