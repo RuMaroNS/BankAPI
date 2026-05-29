@@ -1,0 +1,10 @@
+{
+  "name": "bank-bot",
+  "version": "1.0.0",
+  "main": "bot.js", 
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "telegraf": "^4.16.3",
+    "@supabase/supabase-js": "^2.43.0"
+  }
+}
