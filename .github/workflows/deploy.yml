@@ -1,11 +1,11 @@
 name: CI/CD Pipeline
-on: [push, workflow_dispatch] # workflow_dispatch позволит запускать вручную кнопкой
+on: [push, workflow_dispatch]
 
 jobs:
   run-everything:
     runs-on: ubuntu-latest
     permissions:
-      contents: write # Явно разрешаем запись
+      contents: write
     steps:
       - uses: actions/checkout@v4
       
@@ -14,26 +14,31 @@ jobs:
         with: { node-version: '24' }
           
       - name: Install
-        run: npm install telegraf @supabase/supabase-js
+        run: npm install
 
+      # Запуск бота (в фоне)
       - name: Run Bank Bot
         env:
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
-        run: node bot.js
+        run: node bot.js &
 
-
-      - name: Inject Secrets
+      # Деплой: создаем папку dist, кладем туда чистый код, заменяем ключи ТОЛЬКО там
+      - name: Prepare and Deploy
         run: |
-          sed -i "s|URL_SUPABASE|${{ secrets.SUPABASE_URL }}|g" index.html
-          sed -i "s|KEY_SUPABASE|${{ secrets.SUPABASE_KEY }}|g" index.html
+          mkdir dist
+          cp index.html dist/
+          sed -i "s|URL_SUPABASE|${{ secrets.SUPABASE_URL }}|g" dist/index.html
+          sed -i "s|KEY_SUPABASE|${{ secrets.SUPABASE_KEY }}|g" dist/index.html
+          # Копируем остальные файлы, если они есть
+          cp -r * dist/ || true 
 
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: .
+          publish_dir: ./dist # Деплоим только подготовленную папку
           user_name: 'github-actions[bot]'
           user_email: 'github-actions[bot]@users.noreply.github.com'
-          
+					
